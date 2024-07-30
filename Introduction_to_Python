@@ -29,7 +29,7 @@
 # '''
 # list = []
 # while True:
-#     a = input('???: ')
+#     a = (input('???: ')).lower()
 #     if a == 'stop':
 #         break
 #     else:
