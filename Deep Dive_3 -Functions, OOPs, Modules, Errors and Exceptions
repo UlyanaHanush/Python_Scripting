@@ -16,6 +16,10 @@ class Customer:
         self.title = ""
 
     def __str__(self):
+        if self.isblacklisted == 1:
+            self.isblacklisted = "blocked"
+        else:
+            self.isblacklisted = "not blocked"
         return "Title:" + self.title + " First Name:" + self.fname + " Last Name:" + self.lname + " Blacklisted:" + self.isblacklisted
 
     def setIsblacklisted(self,isblacklisted):
