@@ -4,22 +4,13 @@
 3.Store the data in Customer Class
 4.Create Custom Exception –CustomerNotAllowedException
 '''
-'''
-I wanted to import a file with a class. But since the class name was the same as the file name, I got an error
-'''
 import re
-
-
-class CustomerNotAllowedException(Exception):
-    def __init__(self, text):
-        self.txt = text
-
-
-class Customer():
+import  pandas as pd
+class Customer:
     title = ""
     fname = ""
     lname = ""
-    isblacklisted = 0;
+    isblacklisted = 0
 
     def __init__(self):
         self.title = ""
@@ -30,7 +21,7 @@ class Customer():
     def setIsblacklisted(self,isblacklisted):
         self.isblacklisted = isblacklisted
 
-    def isblacklisted(self):
+    def getIsblacklisted(self):
         return self.isblacklisted
 
     def setTitle(self,title):
@@ -51,36 +42,78 @@ class Customer():
     def getLname(self):
         return self.lname
 
-    def createOrder(self):
-        try:
-            if self.isblacklisted == 1:
-                raise CustomerNotAllowedException('CustomerNotAllowedException')
-        except CustomerNotAllowedException as mr:
-            print(mr)
-        else:
-            productname = input('input productname: ')
-            productcode = input('input product code: ')
-            self = OrderReturn()
-
-
-class OrderReturn(Customer):
-    type = 'Order'
-
-
-Customers = ['customer'+str(i) for i in range(532)]
-list = []
-with open('FairDealCustomerData.csv', 'r') as f:
-    for i in Customers:
-        for line in f:
-            i = Customer()
-            i.title = re.findall('\w+', line)[1]
-            i.fname = re.findall('\w+', line)[2]
-            i.lname = re.findall('\w+', line)[0]
-            i.isblacklisted = re.findall('\w+', line)[3]
-            list.append(i)
 
 
 
-costumer1 = Customer()
-costumer1.isblacklisted = 0
-costumer1.createOrder()
+# define exception for BlackListed Customer
+class CustomerNotAllowed(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
+## End of Exception
+
+
+# function to process the data and return Customer object
+def createCustomerObject(custdata):
+# Extract title
+    customer = Customer()
+    title = custdata['title']
+    customer.setTitle(title.strip())
+    customer.setLname(custdata['last_name'].strip())
+    customer.setFname(custdata['fname'].strip())
+    customer.setIsblacklisted(custdata['yes'])
+    return customer
+
+
+
+# function to create order if user is not blacklisted else throw exception
+def createOrder(customer,productname):
+    if customer.isblacklisted == "1":
+    # print("Raising Customer Exception")
+        raise CustomerNotAllowed("Customer is Black Listed:" + customer.__str__())
+    else:
+        print(" Order created successfully for:" + customer.__str__())
+    ### End of Function #####################
+
+
+
+
+
+data = pd.read_csv('FairDealCustomerData.csv')
+
+# Error. The column name is customer data.
+# Save the client data to rename the columns.
+# Rename the columns.
+# Return the client data to the database
+
+colum = data.columns.values.tolist()
+data = data.rename(columns={colum[0]: 'last_name', colum[1]: 'first_name', colum[2]: 'yes'}) # rename column
+data.loc[len(data.index)] = colum # save data in the table
+
+# Remove spaces at the beginning and end of the data in the column data['first_name'].
+# Split the data into 'title' and 'fname'
+# Write the data into lists.
+
+title = []
+fname = []
+
+for index in data['first_name']:
+    index = index.strip()
+    index = re.split(r'\s+', index, 1)
+    title.append(index[0])
+    fname.append(index[1])
+
+# Create new columns
+# Delete an old column
+# Swap columns for readability
+
+data['title'] = title
+data['fname'] = fname
+data.pop('first_name')
+data = data.reindex(columns=['last_name','title', 'fname', 'yes' ])
+
+# save object data using class
+customerlist = []
+for el in range(data.shape[0]):
+    customerlist.append(createCustomerObject(data.iloc[el]))
